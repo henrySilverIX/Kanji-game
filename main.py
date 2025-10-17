@@ -56,6 +56,9 @@ kanji_primeiro_segundo_button = Button(initial_screen, text="2º ano", width=15,
 kanji_primeiro_segundo_button.pack(pady=10)
 
 
+exit_button = Button(initial_screen, text="Sair", width=15, bg="#e57373", font=(FONT_FAMILY, 14, "bold"), command=window.destroy)
+exit_button.place(x=1700, y=950)
+
 #Difficult Level Screen
 difficult_selection_screen = Frame(window)
 
@@ -110,7 +113,7 @@ first_grade_kanji = pd.read_csv(csv_path)
 #Label for the question - First Grade Kanji
 random_line = first_grade_kanji.sample().iloc[0]
 kanji_atual = random_line["Kanji"]
-question_first_grade_kanji = Label(first_grade_kanji_screen, text=f"{random_line['Português']}\n{random_line['On']}\n{random_line['Kun']}", font=(FONT_FAMILY, 16, "bold"), width=15, height=4)
+question_first_grade_kanji = Label(first_grade_kanji_screen, text=f"{random_line['Português']}\n{random_line['On']}\n{random_line['Kun']}", font=(FONT_FAMILY, 16, "bold"), width=15, height=4, bg="#f5be6c")
 question_first_grade_kanji.pack(pady=40)
 
 
@@ -122,49 +125,73 @@ kanji_buttons_frame.pack(pady=20)
 indice_atual = random_line.name
 
 
+
+
 def new_question():
     global kanji_atual, indice_atual
 
+    if first_grade_kanji.empty:
+        pygame.mixer.music.load("public/audio/victory_song.mp3")  # file path
+        pygame.mixer.music.play()
+        question_first_grade_kanji.config(text="Parabéns! Você completou todos os kanji", width=25, height=4, bg="#f5be6c")
+        
+        # Desativa apenas os botões (sem mexer em labels)
+        for child in first_grade_kanji_screen.winfo_children():
+            if isinstance(child, Button):
+                child.config(state=DISABLED)
+        return
+
     random_line = first_grade_kanji.sample().iloc[0]
     kanji_atual = random_line["Kanji"]
-    indice_atual = random_line.name  # 👈 salva o índice globalmente
-    question_first_grade_kanji.config(text=f"{random_line['Português']}\n{random_line['On']}\n{random_line['Kun']}")
+    indice_atual = random_line.name  # salva o índice globalmente
+    question_first_grade_kanji.config(text=f"{random_line['Português']}\n{random_line['On']}\n{random_line['Kun']}", bg="#f5be6c")
 
 
 def check_answer(kanji_clicado, botao):
-    if kanji_clicado == kanji_atual:
-        pygame.mixer.music.load("public/audio/right_answer_aud.mp3")  # file path
-        pygame.mixer.music.play()
-        botao.config(bg="green")
+    global first_grade_kanji, indice_atual
 
-        #Drop the kanji from the dataframe
+    if kanji_clicado == kanji_atual:
+        pygame.mixer.music.load(resource_path("public/audio/right_answer_aud.mp3"))
+        pygame.mixer.music.play()
+        botao.config(bg="green", state=DISABLED)
+
+        # Remove o kanji já respondido
         first_grade_kanji.drop(index=indice_atual, inplace=True)
 
-        window.after(800, new_question)
+        window.after(500, new_question)
     
     else:
-        pygame.mixer.music.load("public/audio/wrong_answer_aud.mp3")  # file path
+        pygame.mixer.music.load(resource_path("public/audio/wrong_answer_aud.mp3"))
         pygame.mixer.music.play()
         botao.config(bg="red")
-        window.after(800, new_question)
+        window.after(500, new_question)
 
-            
+# Parameters to insert buttons on the image
+COLUNAS = 10         # Número de colunas por linha
+ESPACAMENTO_X = 100  # distância horizontal entre botões
+ESPACAMENTO_Y = 90   # distância vertical entre botões
+OFFSET_X = 450       # posição inicial à direita
+OFFSET_Y = 200       # posição inicial abaixo do topo
 
-# Número de colunas por linha
-COLUNAS = 10
 
 for i, kanji in enumerate(first_grade_kanji["Kanji"].to_list()):
-    linha = i // COLUNAS
-    coluna = i % COLUNAS
+    x = OFFSET_X + (i % COLUNAS) * ESPACAMENTO_X
+    y = OFFSET_Y + (i // COLUNAS) * ESPACAMENTO_Y
+
     kanji_button = Button(
-        kanji_buttons_frame,
+        first_grade_kanji_screen,  # ← coloca diretamente na tela
         text=kanji,
         width=4,
         height=2,
         bg="#f5be6c",
         font=(FONT_FAMILY, 18, "bold"),
     )
+    #  captura tanto o kanji quanto o botão corretamente
     kanji_button.config(command=lambda k=kanji, b=kanji_button: check_answer(k, b))
-    kanji_button.grid(row=linha, column=coluna, padx=5, pady=5)
+
+    kanji_button.place(x=x, y=y)
+
+back_to_menu = Button(first_grade_kanji_screen, text="Voltar para o menu", width=15, bg="#e57373", font=(FONT_FAMILY, 14, "bold"), command=return_main_screen)
+back_to_menu.place(x=1700, y=50)
 
 window.mainloop()
