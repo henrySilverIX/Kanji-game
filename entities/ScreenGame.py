@@ -72,6 +72,8 @@ class ScreenGame:
         )
         back_button.place(x=1700, y=50)
 
+        self.erros_atual = 0
+
     # === Cria os botões dos kanjis ===
     def create_kanji_buttons(self):
         """Cria os botões dos kanji e armazena todos em self.botoes_kanji."""
@@ -112,6 +114,7 @@ class ScreenGame:
         self.initial_screen.pack(fill="both", expand=True)
 
     def new_question(self):
+        self.erros_atual = 0
         # Se acabou o CSV atual
         if self.grade_kanji_csv.empty:
             if self.parte_atual == 1:
@@ -187,10 +190,6 @@ class ScreenGame:
             botao.config(state=NORMAL)
 
     def check_answer(self, kanji_clicado, botao):
-        # Se ainda não houver contador, cria
-        if not hasattr(self, "erros_atual"):
-            self.erros_atual = 0
-
         # Se o jogador acertou
         if kanji_clicado == self.kanji_atual:
             pygame.mixer.music.load(resource_path("public/audio/right_answer_aud.mp3"))
@@ -229,4 +228,3 @@ class ScreenGame:
 
                 # O jogador precisa clicar no botão correto para continuar
         print(self.erros_atual)
-
