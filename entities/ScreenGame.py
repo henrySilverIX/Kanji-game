@@ -1,6 +1,7 @@
 import pandas as pd
 from tkinter import *
-import pygame
+#import pygame
+import numpy as np
 import os
 import sys
 
@@ -14,14 +15,13 @@ def resource_path(relative_path):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
-pygame.mixer.init()
+#pygame.mixer.init()
 
 class ScreenGame:
-    def __init__(self, window, initial_screen, parte1_csv, parte2_csv):
+    def __init__(self, window, initial_screen, csv_file):
         self.window = window
         self.initial_screen = initial_screen
-        self.parte1_path = parte1_csv
-        self.parte2_path = parte2_csv
+        self.part_path = csv_file
         self.parte_atual = 1
 
         # === Estado inicial ===
@@ -38,7 +38,21 @@ class ScreenGame:
         Label(self.first_grade_kanji_screen, image=self.background_image).place(x=0, y=0, relwidth=1, relheight=1)
 
         # === Carrega CSV inicial ===
-        self.grade_kanji_csv = pd.read_csv(self.parte1_path)
+        self.grade_kanji_csv = pd.read_csv(self.part_path)
+
+        num_partes = 4
+
+        # Divide o dataframe
+        partes = np.array_split(self.grade_kanji_csv, num_partes)
+        
+        # Teste: mostra quantas linhas em cada parte
+        for i, parte in enumerate(partes):
+            print(f"Parte {i+1} tem {len(parte)} kanji")
+
+        self.parte1 = partes[0].reset_index(drop=True)
+        self.parte2 = partes[1].reset_index(drop=True)
+        self.grade_kanji_csv = self.parte1
+
 
         # === Define primeira questão ===
         random_line = self.grade_kanji_csv.sample().iloc[0]
@@ -103,25 +117,32 @@ class ScreenGame:
         self.erros_atual = 0
         # Se acabou o CSV atual
         if self.grade_kanji_csv.empty:
-            if self.parte_atual == 1:
-                self.parte_atual = 2
-                self.grade_kanji_csv = pd.read_csv(self.parte2_path)
+            self.parte_atual += 1
+
+            if self.parte_atual <= len(self.partes):
+                self.grade_kanji_csv = self.partes[self.parte_atual - 1]
                 for child in self.first_grade_kanji_screen.winfo_children():
                     if isinstance(child, Button) and child["text"] not in ["Voltar ao menu"]:
                         child.destroy()
+
                 self.create_kanji_buttons()
-                self.question_label.config(text="Segunda parte iniciada!", width=40, height=4, bg="#f5be6c")
+                self.question_label.config(
+                    text=f"Iniciando parte {self.parte_atual}...",
+                    width=40, height=4, bg="#f5be6c"
+                )
                 self.window.after(1000, self.new_question)
                 return
             else:
-                pygame.mixer.music.load(resource_path("public/audio/victory_song.mp3"))
-                pygame.mixer.music.play()
-                self.question_label.config(text="Parabéns! Você completou todos os kanji 🎉",
-                                           width=40, height=4, bg="#f5be6c")
+                # Fim de todas as partes
+                self.question_label.config(
+                    text="Parabéns! Você completou todos os kanji 🎉",
+                    width=40, height=4, bg="#f5be6c"
+                )
                 for child in self.first_grade_kanji_screen.winfo_children():
                     if isinstance(child, Button):
                         child.config(state=DISABLED)
                 return
+
 
         random_line = self.grade_kanji_csv.sample().iloc[0]
         self.kanji_atual = random_line["Kanji"]
@@ -133,7 +154,7 @@ class ScreenGame:
             self.create_kanji_buttons()
         self.set_correct_button()
 
-    def blink_button(self, botao, cor1="red", cor2="#f5be6c", n=6):
+    def blink_button(self, botao, cor1="red", cor2="#f5be6c", n=2):
         if n > 0:
             nova_cor = cor1 if botao.cget("bg") == cor2 else cor2
             botao.config(bg=nova_cor)
@@ -144,8 +165,8 @@ class ScreenGame:
 
     def check_answer(self, kanji_clicado, botao):
         if kanji_clicado == self.kanji_atual:
-            pygame.mixer.music.load(resource_path("public/audio/right_answer_aud.mp3"))
-            pygame.mixer.music.play()
+            #pygame.mixer.music.load(resource_path("public/audio/right_answer_aud.mp3"))
+            #pygame.mixer.music.play()
             if self.erros_atual == 0:
                 botao.config(bg="#479e0d")
             elif self.erros_atual == 1:
@@ -159,9 +180,9 @@ class ScreenGame:
             self.window.after(1000, self.new_question)
         else:
             self.erros_atual += 1
-            pygame.mixer.music.load(resource_path("public/audio/wrong_answer_aud.mp3"))
-            pygame.mixer.music.play()
-            self.blink_button(botao, cor1="red", cor2="#f5be6c", n=6)
+            #pygame.mixer.music.load(resource_path("public/audio/wrong_answer_aud.mp3"))
+            #pygame.mixer.music.play()
+            self.blink_button(botao, cor1="red", cor2="#f5be6c", n=2)
             if self.erros_atual >= 3:
                 if self.botao_correto:
                     self.blink_button(self.botao_correto)

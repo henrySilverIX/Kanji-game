@@ -1,5 +1,5 @@
 from entities.ScreenGame import ScreenGame
-import pygame
+#import pygame
 import pandas as pd
 from tkinter import *
 import os
@@ -9,7 +9,7 @@ BACKGROUND_COLOR = "#494949"
 FONT_FAMILY = "Ariel"
 base_path = os.path.dirname(__file__)
 
-pygame.mixer.init()
+#pygame.mixer.init()
 
 def resource_path(relative_path):
     if getattr(sys, 'frozen', False):
@@ -17,7 +17,7 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 
 def selecionar_kanji_csv(conjunto):
-    global qual_conjunto, parte1_csv, parte2_csv
+    global qual_conjunto
     qual_conjunto = conjunto  # "primeiro_ano" ou "segundo_ano"
     print(f"Conjunto selecionado: {qual_conjunto}")
     go_to_difficult_level()
@@ -25,7 +25,7 @@ def selecionar_kanji_csv(conjunto):
 # === Main Window ===
 window = Tk()
 window.title("Quiz Kanji")
-window.minsize(width=1920, height=1080)
+window.minsize(width=1920, height=1080) #Estava 1920 x 1080
 
 # === Tela inicial ===
 initial_screen = Frame(window)
@@ -72,16 +72,13 @@ def show_first_grade_screen():
     difficult_selection_screen.pack_forget()
 
     if qual_conjunto == "primeiro_ano":
-        parte1 = "public/data/kanji_primeiro_ano_1_parte.csv"
-        parte2 = "public/data/kanji_primeiro_ano_2_parte.csv"
+        csv_path = "public/data/kanji_primeiro_ano.csv"
     elif qual_conjunto == "segundo_ano":
-        parte1 = "public/data/kanji_segundo_ano_1_parte.csv"
-        parte2 = "public/data/kanji_segundo_ano_2_parte.csv"
+        csv_path = "public/data/kanji_segundo_ano.csv"
     elif qual_conjunto == "terceiro_ano":
-        parte1 = "public/data/kanji_terceiro_ano_1_parte.csv"
-        parte2 = "public/data/kanji_terceiro_ano_2_parte.csv"
+        csv_path = "public/data/kanji_terceiro_ano.csv"
 
-    game_screen = ScreenGame(window, initial_screen, parte1, parte2)
+    game_screen = ScreenGame(window, initial_screen, csv_path)
     game_screen.first_grade_kanji_screen.pack(fill="both", expand=True)
 
 
