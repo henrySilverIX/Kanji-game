@@ -1,5 +1,5 @@
 from entities.ScreenGame import ScreenGame
-#import pygame
+import pygame
 import pandas as pd
 from tkinter import *
 import os
@@ -9,7 +9,7 @@ BACKGROUND_COLOR = "#494949"
 FONT_FAMILY = "Ariel"
 base_path = os.path.dirname(__file__)
 
-#pygame.mixer.init()
+pygame.mixer.init()
 
 def resource_path(relative_path):
     if getattr(sys, 'frozen', False):

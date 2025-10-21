@@ -1,6 +1,6 @@
 import pandas as pd
 from tkinter import *
-#import pygame
+import pygame
 import numpy as np
 import os
 import sys
@@ -15,7 +15,7 @@ def resource_path(relative_path):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
-#pygame.mixer.init()
+pygame.mixer.init()
 
 class ScreenGame:
     def __init__(self, window, initial_screen, csv_file):
@@ -165,8 +165,8 @@ class ScreenGame:
 
     def check_answer(self, kanji_clicado, botao):
         if kanji_clicado == self.kanji_atual:
-            #pygame.mixer.music.load(resource_path("public/audio/right_answer_aud.mp3"))
-            #pygame.mixer.music.play()
+            pygame.mixer.music.load(resource_path("public/audio/right_answer_aud.mp3"))
+            pygame.mixer.music.play()
             if self.erros_atual == 0:
                 botao.config(bg="#479e0d")
             elif self.erros_atual == 1:
@@ -180,8 +180,8 @@ class ScreenGame:
             self.window.after(1000, self.new_question)
         else:
             self.erros_atual += 1
-            #pygame.mixer.music.load(resource_path("public/audio/wrong_answer_aud.mp3"))
-            #pygame.mixer.music.play()
+            pygame.mixer.music.load(resource_path("public/audio/wrong_answer_aud.mp3"))
+            pygame.mixer.music.play()
             self.blink_button(botao, cor1="red", cor2="#f5be6c", n=2)
             if self.erros_atual >= 3:
                 if self.botao_correto:
